@@ -8,28 +8,35 @@ operations on large datasets.
 I was messing around with large datasets, and I couldn't find a lot of good tools out there.
 I found some good design patterns for making iterators with goroutines and channels, but nothing
 on using those streams. This library is designed to help you manipulate large data sets in a an
-asynchronous fashion
-using well understood components of logic.
+asynchronous fashion using well understood components that you've seen in other languages.
 I borrowed a lot of nomenclature from Java's Streams API because that's what I am familiar with.
 ## Features
-### FromCollection
+`FromCollection`
 Creates a Streams object from a slice
-### FromStream
+
+`FromStream`
 Creates a Streams object from a Stream, which is just a `chan interface{}`
-### Filter
+
+`Filter`
 Filters the elements of a Stream according to the Predicate function.
-### Map
+
+`Map`
 Transforms the elements of a Stream according to the Mapper function.
-### Reduce
+
+`Reduce`
 Reduces the elements of a Stream according to the Reducer function.
-### Collect
+
+`Collect`
 Collects the elements of a Stream according to the Collector object, which collects
-elements using its `Add` function and returns the collection using the `Complete` function
-### ForEach
+elements using its `Add` function and returns the collection using the `Complete` function.
+
+`ForEach`
 Applies the Consumer function to each element of the stream.
-### ForEachThen
+
+`ForEachThen`
 Applies the Consumer function to each element of the stream. Returns the stream with all
 the elements still in it for future use.
+
 ## Examples
 I strongly recommend you look at the unit and integration tests, as those are examples that
 you can trust to compile and work.
