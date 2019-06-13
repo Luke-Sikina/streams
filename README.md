@@ -1,5 +1,6 @@
 # Streams - Higher Order Functions for Streams
 [![Build Status](https://travis-ci.org/Luke-Sikina/streams.svg?branch=master)](https://travis-ci.org/Luke-Sikina/streams)
+[![GoDoc](https://godoc.org/github.com/Luke-Sikina/streams?status.svg)](https://godoc.org/github.com/Luke-Sikina/streams)
 
 Functions for creating and using Streams. Good for performing map / filter / reduce
 operations on large datasets.
