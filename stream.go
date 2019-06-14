@@ -1,11 +1,18 @@
 package streams
 
+// Predicate is used to Filter elements from streams
 type Predicate func(element interface{}) bool
+
+// Reducer is used to Reduce elements from streams into a single element
 type Reducer func(first, second interface{}) interface{}
+
+// Mapper is used to Map elements from streams from one thing to another
 type Mapper func(element interface{}) interface{}
+
+// Consumer is used to perform some process ForEach element in streams
 type Consumer func(element interface{})
 
-// Used by Streams.Collect
+// Collector is used by streams.Collect
 // Add is used to add stream elements to the collection
 // Complete returns the collection
 type Collector interface {
@@ -13,9 +20,16 @@ type Collector interface {
 	Complete() interface{}
 }
 
+// Stream is the underlying data type that the Streams struct uses
 type Stream chan interface{}
+
+// Streams is the struct that stores the state of the different Streams
+// In general, there will be 1 Stream in streams for each
+// Filter / Map / ForEachThen that has been called on this
+// Streams object thus far. Each will have a buffer of size
+// channelBuffer.
 type Streams struct {
-	Streams       []Stream
+	streams       []Stream
 	channelBuffer int
 }
 
@@ -32,7 +46,7 @@ func toStream(collection []interface{}) Stream {
 	return ch
 }
 
-// Creates a Streams object from the given slice.
+// FromCollection creates a streams object from the given slice.
 // The channel buffer size will be set to the size of the slice
 // If the data being processed is large enough that a slice would be
 // impractical, use FromStream instead
@@ -41,21 +55,21 @@ func FromCollection(collection []interface{}) Streams {
 	return FromStream(startStream, len(collection))
 }
 
-// Creates a Streams object from the given channel
-// Future Stream objects in the Streams object will be created with
+// FromStream creates a streams object from the given channel
+// Future Stream objects in the streams object will be created with
 // a buffer size of bufferSize
 func FromStream(stream Stream, bufferSize int) Streams {
 	return Streams{[]Stream{stream}, bufferSize}
 }
 
 func addNewStream(streams *Streams) (current, next Stream) {
-	current = streams.Streams[len(streams.Streams)-1]
+	current = streams.streams[len(streams.streams)-1]
 	next = make(Stream, streams.channelBuffer)
-	streams.Streams = append(streams.Streams, next)
+	streams.streams = append(streams.streams, next)
 	return
 }
 
-// Asynchronously filters the elements in the streams using the provided Predicate.
+// Filter asynchronously filters the elements in the streams using the provided Predicate.
 // Elements that cause the Predicate to evaluate to true are kept,
 // elements that cause the Predicate to evaluate to false are discarded.
 func (streams *Streams) Filter(predicate Predicate) *Streams {
@@ -73,7 +87,7 @@ func (streams *Streams) Filter(predicate Predicate) *Streams {
 	return streams
 }
 
-// Asynchronously transforms the elements in the streams using the provided Mapper.
+// Map asynchronously transforms the elements in the streams using the provided Mapper.
 // Use this to turn the elements of the stream from one thing into another thing
 func (streams *Streams) Map(mapper Mapper) *Streams {
 	current, next := addNewStream(streams)
@@ -89,7 +103,7 @@ func (streams *Streams) Map(mapper Mapper) *Streams {
 }
 
 func (streams *Streams) lastStream() Stream {
-	return streams.Streams[len(streams.Streams)-1]
+	return streams.streams[len(streams.streams)-1]
 }
 
 // Reduce the elements in the stream to a singe element
@@ -117,7 +131,7 @@ func (streams *Streams) Collect(collector Collector) interface{} {
 	return collector.Complete()
 }
 
-// Calls consumer(element) on each element on the stream
+// ForEach calls consumer(element) on each element on the stream
 func (streams *Streams) ForEach(consumer Consumer) {
 	lastStream := streams.lastStream()
 	for element := range lastStream {
@@ -125,7 +139,7 @@ func (streams *Streams) ForEach(consumer Consumer) {
 	}
 }
 
-// Calls consumer(element) on each element of the stream, returns the streams
+// ForEachThen calls consumer(element) on each element of the stream, returns the streams
 // for future use.
 // As far as I can tell, there is no instance where it is more efficient
 // to do ForEachThen().ForEach() rather than combining the consumer functions
