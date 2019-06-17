@@ -52,8 +52,13 @@ This example builds a stream from a collection of ints, filters out the ints not
 then multiplies them each 5 five, and sums the elements together. The example is designed to be compact
 and readable so you can quickly understand what this library does.
 ``` Golang
+import (
+	"log"
+	"github.com/Luke-Sikina/streams"
+)
+
 func TrivialExample() {
-	stream := FromCollection([]interface{}{1,2,3,4})
+    stream := streams.FromCollection([]interface{}{1,2,3,4})
 	someSum := stream.
 		Filter(DivisibleByTwo).
 		Map(TimesFive).
@@ -81,34 +86,53 @@ This example reads a stream of numbers from a file, filters out the positive eve
 to a second file. There's a lot of boilerplate opening files and setting up bufio objects, so if you're looking
 for the meat of the example, start at `stream := streams.FromScanner(scanner, 1023)`.
 ``` Golang
-// open the input and output files
-input, err := os.Open("input.txt")
-defer closeFileLogErr(input)
-if err != nil {
-    log.Fatalf("Error opening file: %v", err)
+import (
+	"bufio"
+	"log"
+	"os"
+
+	"github.com/Luke-Sikina/streams"
+	"github.com/Luke-Sikina/streams/consumers"
+	"github.com/Luke-Sikina/streams/mappers"
+)
+
+func main() {
+	// open the input and output files
+	input, err := os.Open("input.txt")
+	defer closeFileLogErr(input)
+	if err != nil {
+		log.Fatalf("Error opening file: %v", err)
+	}
+
+	output, err := os.Create("output.txt")
+	defer closeFileLogErr(output)
+	if err != nil {
+		log.Fatalf("Error opening file: %v", err)
+	}
+
+	// set up the scanner and writers
+	scanner := bufio.NewScanner(input)
+	stream := streams.FromScanner(scanner, 1023)
+	writer := bufio.NewWriter(output)
+
+	// run the stream logic
+	stream.
+		Map(mappers.StringToIntMapper).
+		Filter(func(e interface{}) bool {return e.(int) % 2 == 1}).
+		Map(mappers.IntToStringMapper).
+		ForEach(consumers.ConsumeWithDelimitedWriter(writer, "\n"))
+
+	// make sure to flush the writer so you actually get output
+	err = writer.Flush()
+	if err != nil {
+		log.Fatalf("Error flushing buffer: %v", err)
+	}
 }
 
-output, err := os.Create("output.txt")
-defer closeFileLogErr(output)
-if err != nil {
-    log.Fatalf("Error opening file: %v", err)
-}
-
-// set up the scanner and writer
-scanner := bufio.NewScanner(input)
-writer := bufio.NewWriter(output)
-
-// actually use this library to process the data
-stream := streams.FromScanner(scanner, 1023)
-stream.
-    Map(mappers.StringToIntMapper).
-    Filter(func(e interface{}) bool {return e.(int) % 2 == 1}).
-    Map(mappers.IntToStringMapper).
-    ForEach(consumers.ConsumeWithDelimitedWriter(writer, "\n"))
-
-// make sure to flush the writer so you actually get output.
-err = writer.Flush()
-if err != nil {
-    log.Fatalf("Error flushing buffer: %v", err)
+func closeFileLogErr(f *os.File) {
+	err := f.Close()
+	if err != nil {
+		log.Printf("Error closing file: %v", err)
+	}
 }
 ```

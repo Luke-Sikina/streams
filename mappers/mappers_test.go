@@ -126,14 +126,9 @@ type KeyValueMapperCase struct {
 	Expected []interface{}
 }
 
-func GetKey(element interface{}) interface{} {
+func GetEntry(element interface{}) (interface{}, interface{}) {
 	split := strings.Split(element.(string), ":")
-	return split[0]
-}
-
-func GetValue(element interface{}) interface{} {
-	split := strings.Split(element.(string), ":")
-	return split[1]
+	return split[0], split[1]
 }
 
 func TestKeyValueMapper(t *testing.T) {
@@ -153,7 +148,7 @@ func TestKeyValueMapper(t *testing.T) {
 	for _, caze := range cases {
 		stream := streams.FromCollection(caze.Start)
 		actual := stream.
-			Map(KeyValueMapper(GetKey, GetValue)).
+			Map(KeyValueMapper(GetEntry)).
 			Collect(collectors.NewSliceCollector())
 
 		assert.Equal(t, caze.Expected, actual)

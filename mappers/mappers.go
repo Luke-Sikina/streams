@@ -46,21 +46,15 @@ func StringToFloatMapper(floatSize int) streams.Mapper {
 	}
 }
 
-// Gets the key from an element
-type KeyGetter func(element interface{}) interface{}
+// Gets the key and value from an element
+type EntryCreator func(element interface{}) (interface{}, interface{})
 
-// Gets the value from an element
-type ValueGetter KeyGetter
-
-// KeyValueMapper takes two functions: a KeyGetter and a ValueGetter.
-// It uses these functions to create a collectors.Entry, which it then returns.
-// The function can be used to create a stream of collectors.Entry for
-// collectors.GroupByCollector and collectors.MapCollector
-func KeyValueMapper(keyGetter KeyGetter, valueGetter ValueGetter) streams.Mapper {
+// KeyValueMapper takes a EntryCreator function. It uses this function to create
+// a collectors.Entry, which it then returns. The function can be used to create
+// a stream of collectors.Entry for collectors.GroupByCollector and collectors.MapCollector
+func KeyValueMapper(toEntry EntryCreator) streams.Mapper {
 	return func(element interface{}) interface{} {
-		return collectors.Entry{
-			Key:   keyGetter(element),
-			Value: valueGetter(element),
-		}
+		key, value := toEntry(element)
+		return collectors.Entry{Key: key, Value: value}
 	}
 }
