@@ -1,8 +1,10 @@
 package streams
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"io"
 	"testing"
 )
 
@@ -37,6 +39,60 @@ func TestFromCollection(t *testing.T) {
 		actual := streams.Collect(&collector)
 
 		assert.Equal(t, caze, actual)
+	}
+}
+
+type FromScannerCase struct {
+	Lines    [][]byte
+	Expected []interface{}
+}
+
+// All this gross boilerplate is to avoid doing a full file io test
+// the result is a faster, more focused test, but it comes at the
+// expense of anyone reading this boiler plate, so sorry!
+type TestReader struct {
+	lines [][]byte
+	index int
+}
+
+func (reader *TestReader) Read(p []byte) (n int, err error) {
+	if reader.index >= len(reader.lines) {
+		return 0, io.EOF
+	}
+	// I thought that every action here = 1 scan + text
+	// NOT TRUE! Make sure your lines end with a \n
+	// I think this is decided by the scan.Scanner.Split fn
+	copy(p, reader.lines[reader.index])
+	reader.index++
+	return len(reader.lines[reader.index-1]), nil
+}
+
+func TestFromScanner(t *testing.T) {
+	cases := []FromScannerCase{
+		{
+			[][]byte{},
+			[]interface{}{},
+		}, {
+			[][]byte{[]byte("abc")},
+			[]interface{}{"abc"},
+		}, {
+			[][]byte{[]byte("abc\n"), []byte("def")},
+			[]interface{}{"abc", "def"},
+		}, {
+			[][]byte{[]byte("abc\n"), []byte("\t€")},
+			[]interface{}{"abc", "\t€"},
+		},
+	}
+
+	for _, caze := range cases {
+		collector := sliceCollector{[]interface{}{}}
+		reader := TestReader{caze.Lines, 0}
+		scanner := bufio.NewScanner(&reader)
+
+		subject := FromScanner(scanner, 10)
+		actual := subject.Collect(&collector)
+
+		assert.Equal(t, caze.Expected, actual)
 	}
 }
 
