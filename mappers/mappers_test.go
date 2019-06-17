@@ -4,6 +4,7 @@ import (
 	"github.com/Luke-Sikina/streams"
 	"github.com/Luke-Sikina/streams/collectors"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -114,6 +115,45 @@ func TestFloatToIntMapper(t *testing.T) {
 		stream := streams.FromCollection(caze.Start)
 		actual := stream.
 			Map(StringToFloatMapper(caze.FloatSize)).
+			Collect(collectors.NewSliceCollector())
+
+		assert.Equal(t, caze.Expected, actual)
+	}
+}
+
+type KeyValueMapperCase struct {
+	Start    []interface{}
+	Expected []interface{}
+}
+
+func GetKey(element interface{}) interface{} {
+	split := strings.Split(element.(string), ":")
+	return split[0]
+}
+
+func GetValue(element interface{}) interface{} {
+	split := strings.Split(element.(string), ":")
+	return split[1]
+}
+
+func TestKeyValueMapper(t *testing.T) {
+	cases := []KeyValueMapperCase{
+		{
+			[]interface{}{},
+			[]interface{}{},
+		}, {
+			[]interface{}{"foo:1", "bar:2"},
+			[]interface{}{
+				collectors.Entry{Key: "foo", Value: "1"},
+				collectors.Entry{Key: "bar", Value: "2"},
+			},
+		},
+	}
+
+	for _, caze := range cases {
+		stream := streams.FromCollection(caze.Start)
+		actual := stream.
+			Map(KeyValueMapper(GetKey, GetValue)).
 			Collect(collectors.NewSliceCollector())
 
 		assert.Equal(t, caze.Expected, actual)

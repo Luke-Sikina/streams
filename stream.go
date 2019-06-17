@@ -67,6 +67,11 @@ func FromStream(stream Stream, bufferSize int) *Streams {
 	return &streams
 }
 
+// FromScanner creates a streams object from the given channel.
+// Each element in the stream represents one scanner.Scan() and scanner.Text().
+// The elements will be of type string.
+// Future Stream objects in the streams object will be created with
+// a buffer size of bufferSize
 func FromScanner(scanner *bufio.Scanner, bufferSize int) *Streams {
 	ch := make(Stream, bufferSize)
 
