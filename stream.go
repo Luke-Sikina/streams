@@ -54,7 +54,7 @@ func toStream(collection []interface{}) Stream {
 // The channel buffer size will be set to the size of the slice
 // If the data being processed is large enough that a slice would be
 // impractical, use FromStream instead
-func FromCollection(collection []interface{}) Streams {
+func FromCollection(collection []interface{}) *Streams {
 	startStream := toStream(collection)
 	return FromStream(startStream, len(collection))
 }
@@ -62,11 +62,12 @@ func FromCollection(collection []interface{}) Streams {
 // FromStream creates a streams object from the given channel
 // Future Stream objects in the streams object will be created with
 // a buffer size of bufferSize
-func FromStream(stream Stream, bufferSize int) Streams {
-	return Streams{[]Stream{stream}, bufferSize}
+func FromStream(stream Stream, bufferSize int) *Streams {
+	streams := Streams{[]Stream{stream}, bufferSize}
+	return &streams
 }
 
-func FromScanner(scanner *bufio.Scanner, bufferSize int) Streams {
+func FromScanner(scanner *bufio.Scanner, bufferSize int) *Streams {
 	ch := make(Stream, bufferSize)
 
 	go func() {
@@ -76,10 +77,11 @@ func FromScanner(scanner *bufio.Scanner, bufferSize int) Streams {
 		}
 	}()
 
-	return Streams{
+	streams := Streams{
 		[]Stream{ch},
 		bufferSize,
 	}
+	return &streams
 }
 
 func addNewStream(streams *Streams) (current, next Stream) {
