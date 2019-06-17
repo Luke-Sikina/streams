@@ -28,9 +28,8 @@ func MapToInt(element interface{}) interface{} {
 	asInt, err := strconv.Atoi(element.(string))
 	if err == nil {
 		return asInt
-	} else {
-		return 0
 	}
+	return 0
 }
 
 func DivisibleByTwo(subject interface{}) bool {

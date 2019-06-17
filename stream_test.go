@@ -58,14 +58,13 @@ type TestReader struct {
 func (reader *TestReader) Read(p []byte) (n int, err error) {
 	if reader.index >= len(reader.lines) {
 		return 0, io.EOF
-	} else {
-		// I thought that every action here = 1 scan + text
-		// NOT TRUE! Make sure your lines end with a \n
-		// I think this is decided by the scan.Scanner.Split fn
-		copy(p, reader.lines[reader.index])
-		reader.index++
-		return len(reader.lines[reader.index-1]), nil
 	}
+	// I thought that every action here = 1 scan + text
+	// NOT TRUE! Make sure your lines end with a \n
+	// I think this is decided by the scan.Scanner.Split fn
+	copy(p, reader.lines[reader.index])
+	reader.index++
+	return len(reader.lines[reader.index-1]), nil
 }
 
 func TestFromScanner(t *testing.T) {
