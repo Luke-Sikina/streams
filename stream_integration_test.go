@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"os"
 	"strconv"
 	"testing"
@@ -24,29 +23,13 @@ import (
 // represents a good middle ground.
 // The test also lays out an example of how I expect this library to be used,
 // filtering, mapping and finally reducing / collecting / consuming the stream.
-func createStream() Stream {
-	file, _ := os.Open("integration_test.txt")
-	ch := make(chan interface{}, 1024)
 
-	reader := bufio.NewScanner(file)
-	go func() {
-		defer close(ch)
-		defer closeFile(file)
-		for reader.Scan() {
-			line := reader.Text()
-			num, err := strconv.Atoi(line)
-			if err == nil {
-				ch <- num
-			}
-		}
-	}()
-	return ch
-}
-
-func closeFile(file *os.File) {
-	err := file.Close()
-	if err != nil {
-		log.Printf("Error closing file: %v", err)
+func MapToInt(element interface{}) interface{} {
+	asInt, err := strconv.Atoi(element.(string))
+	if err == nil {
+		return asInt
+	} else {
+		return 0
 	}
 }
 
@@ -83,10 +66,12 @@ func ReduceConcat(first, second interface{}) interface{} {
 }
 
 func TestStreams(t *testing.T) {
-	stream := createStream()
-	streams := FromStream(stream, 1024)
+	file, _ := os.Open("integration_test.txt")
+	reader := bufio.NewScanner(file)
+	streams := FromScanner(reader, 1024)
 
 	actual := streams.
+		Map(MapToInt).
 		Filter(DivisibleByThirteen).
 		Filter(DivisibleByEleven).
 		Filter(DivisibleBySeven).

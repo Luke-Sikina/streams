@@ -1,5 +1,9 @@
 package streams
 
+import (
+	"bufio"
+)
+
 // Predicate is used to Filter elements from streams
 type Predicate func(element interface{}) bool
 
@@ -60,6 +64,22 @@ func FromCollection(collection []interface{}) Streams {
 // a buffer size of bufferSize
 func FromStream(stream Stream, bufferSize int) Streams {
 	return Streams{[]Stream{stream}, bufferSize}
+}
+
+func FromScanner(scanner *bufio.Scanner, bufferSize int) Streams {
+	ch := make(Stream, bufferSize)
+
+	go func() {
+		defer close(ch)
+		for scanner.Scan() {
+			ch <- scanner.Text()
+		}
+	}()
+
+	return Streams{
+		[]Stream{ch},
+		bufferSize,
+	}
 }
 
 func addNewStream(streams *Streams) (current, next Stream) {
