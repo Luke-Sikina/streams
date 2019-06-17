@@ -58,7 +58,7 @@ import (
 )
 
 func TrivialExample() {
-	stream := FromCollection([]interface{}{1,2,3,4})
+    stream := streams.FromCollection([]interface{}{1,2,3,4})
 	someSum := stream.
 		Filter(DivisibleByTwo).
 		Map(TimesFive).
