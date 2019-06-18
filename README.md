@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/Luke-Sikina/streams.svg?branch=master)](https://travis-ci.org/Luke-Sikina/streams)
 [![GoDoc](https://godoc.org/github.com/Luke-Sikina/streams?status.svg)](https://godoc.org/github.com/Luke-Sikina/streams)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Luke-Sikina/streams)](https://goreportcard.com/report/github.com/Luke-Sikina/streams)
+[![Coverage Status](https://coveralls.io/repos/github/Luke-Sikina/streams/badge.svg?branch=coverage)](https://coveralls.io/github/Luke-Sikina/streams?branch=coverage)
 
 Functions for creating and using Streams. Good for performing map / filter / reduce
 operations on datasets you can't keep entirely in memory.
