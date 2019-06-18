@@ -13,6 +13,10 @@ type Reducer func(first, second interface{}) interface{}
 // Mapper is used to Map elements from streams from one thing to another
 type Mapper func(element interface{}) interface{}
 
+// FlatMapper is used to Map elements from streams from one thing to a slice of things
+// which will then be flattened into a Stream
+type FlatMapper func(element interface{}) []interface{}
+
 // Consumer is used to perform some process ForEach element in streams
 type Consumer func(element interface{})
 
@@ -123,6 +127,23 @@ func (streams *Streams) Map(mapper Mapper) *Streams {
 		defer close(next)
 		for object := range current {
 			next <- mapper(object)
+		}
+	}()
+
+	return streams
+}
+
+// FlatMap asynchronously transforms the elements in the streams using the provided
+// FlatMapper. Use this to turn each element in a stream into 0 or more elements.
+func (streams *Streams) FlatMap(mapper FlatMapper) *Streams {
+	current, next := addNewStream(streams)
+
+	go func() {
+		defer close(next)
+		for object := range current {
+			for _, element := range mapper(object) {
+				next <- element
+			}
 		}
 	}()
 
