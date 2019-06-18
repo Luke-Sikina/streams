@@ -25,9 +25,8 @@ func StringToIntMapper(element interface{}) interface{} {
 
 	if err == nil {
 		return asInt
-	} else {
-		return 0
 	}
+	return 0
 }
 
 // StringToFloatMapper returns a function that converts elements
@@ -40,13 +39,12 @@ func StringToFloatMapper(floatSize int) streams.Mapper {
 
 		if err == nil {
 			return asFloat
-		} else {
-			return 0.0
 		}
+		return 0.0
 	}
 }
 
-// Gets the key and value from an element
+// EntryCreator gets the key and value from an element
 type EntryCreator func(element interface{}) (interface{}, interface{})
 
 // KeyValueMapper takes a EntryCreator function. It uses this function to create

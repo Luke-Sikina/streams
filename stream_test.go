@@ -6,6 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io"
 	"testing"
+
+	"github.com/Luke-Sikina/streams/collectors"
 )
 
 // a lot of tests in here depend on collect to slice working. not ideal
@@ -259,5 +261,46 @@ func TestStreams_ForEachThen(t *testing.T) {
 
 		assert.Equal(t, caze, seen)
 		assert.Equal(t, caze, actual)
+	}
+}
+
+func CountFromZero(element interface{}) []interface{} {
+	num := element.(int)
+	count := make([]interface{}, num, num)
+	for index := range count {
+		count[index] = index + 1
+	}
+	return count
+}
+
+type FlatMapCase struct {
+	Start    []interface{}
+	Expected []interface{}
+}
+
+func TestStreams_FlatMap(t *testing.T) {
+	cases := []FlatMapCase{
+		{
+			[]interface{}{},
+			[]interface{}{},
+		}, {
+			[]interface{}{1, 2, 3},
+			[]interface{}{1, 1, 2, 1, 2, 3},
+		}, {
+			[]interface{}{0},
+			[]interface{}{},
+		}, {
+			[]interface{}{0, 1, 2, 3},
+			[]interface{}{1, 1, 2, 1, 2, 3},
+		},
+	}
+
+	for _, caze := range cases {
+		stream := FromCollection(caze.Start)
+		actual := stream.
+			FlatMap(CountFromZero).
+			Collect(collectors.NewSliceCollector())
+
+		assert.Equal(t, caze.Expected, actual)
 	}
 }
